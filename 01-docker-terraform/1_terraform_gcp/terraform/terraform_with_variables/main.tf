@@ -14,7 +14,7 @@ provider "google" {
 }
 
 
-resource "google_storage_bucket" "demo-bucket" {
+resource "google_storage_bucket" "data-lake-bucket" {
   name          = var.gcs_bucket_name
   location      = var.location
   force_destroy = true
@@ -22,7 +22,7 @@ resource "google_storage_bucket" "demo-bucket" {
 
   lifecycle_rule {
     condition {
-      age = 1
+      age = 30
     }
     action {
       type = "AbortIncompleteMultipartUpload"
@@ -32,7 +32,7 @@ resource "google_storage_bucket" "demo-bucket" {
 
 
 
-resource "google_bigquery_dataset" "demo_dataset" {
+resource "google_bigquery_dataset" "terraform_dataset" {
   dataset_id = var.bq_dataset_name
   location   = var.location
 }

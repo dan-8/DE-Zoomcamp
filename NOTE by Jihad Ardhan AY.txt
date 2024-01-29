@@ -1,0 +1,137 @@
+Shortcut:
+Ctrl + D = Exit the Intepreter
+Ctrl + C = Terminate current command
+
+Bash:
+$ htop = Check performance information
+$ sudo apt-get update = update all installer
+$ sudo apt-get install docker.io = install docker
+$ mv = move (path/filename1) (path/filename2)
+$ rm = remove file
+$ rm -rf = remove folder
+$ nano (path/filename) = open text editor
+
+$ pgcli -h localhost -p 5431 -U root -d ny_taxi
+= Open PostgreCLI from localhost with user Root and Database ny_taxi
+
+run docker without sudo:
+$ sudo groupadd docker
+$ sudo gpasswd -a $USER docker
+$ sudo service docker restart
+logout
+
+docker run hello-world = test run hello-world image from repository
+
+ssh-keygen -t rsa -f ~/.ssh/gcp_ubuntu22 -C Ardan -b 2048
+= Generate public key dan private key
+
+POSTGRESQL;
+$ \q (TO QUIT STUCK QUERY)
+
+
+DATA INGESTION (BASH):
+URL="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/green/green_tripdata_2019-09.csv.gz"
+docker run -it \
+  --network=2_docker_sql_default \
+  taxi_ingest:v001 \
+    --user=root \
+    --password=root \
+    --host=pgdatabase \
+    --port=5432 \
+    --db=ny_taxi \
+    --table_name=green_taxi_trips \
+
+Git:
+$ git init
+$ git add .
+$ git commit -m "initial commit"
+$ git remote add origin <URL_TO_YOUR_REPO>
+$ git push -u origin master
+
+Terraform:
+$ terraform init
+$ terraform plan = to check if the config/setting is correct
+$ terraform apply = apply the configured environment (main.tf) on GCP
+$ terraform destroy = destroy the environemnt on GCP
+
+
+
+=================================================================================================
+
+Homework:
+
+Question 1. Which tag has the following text? - Automatically remove the container when it exits.
+Answer = --rm
+
+docker run --help
+
+Question 2. What is version of the package wheel ? Using pip list
+Answer = actual answer 0.40.0 > 0.42.0 (latest ver)
+
+"
+import pkg_resources
+installed_packages = pkg_resources.working_set
+installed_packages_list = sorted(["%s==%s" % (i.key, i.version)
+   for i in installed_packages])
+print(installed_packages_list)
+"
+
+Question 3. Count records
+Answer = 15612
+
+--Query
+SELECT COUNT(*) FROM GREEN_TAXI_TRIPS
+WHERE lpep_dropoff_datetime::timestamp::date = '2019-09-18' AND lpep_pickup_datetime::timestamp::date = '2019-09-18'
+
+Question 4.
+Answer = 2019-09-26
+
+--Query
+SELECT lpep_pickup_datetime, MAX(TRIP_DISTANCE) TRIP_DISTANCE FROM GREEN_TAXI_TRIPS
+GROUP BY lpep_pickup_datetime
+ORDER BY TRIP_DISTANCE DESC
+LIMIT 8
+
+Question 5. Three biggest pick up Boroughs
+Answer = 'Brooklyn', 'Manhattan', 'Queens'
+
+--Query
+SELECT
+    tz."Borough",
+    SUM(gtt.total_amount) AS total_amount_sum
+FROM
+    green_taxi_trips gtt
+JOIN
+    taxi_zone tz ON gtt."PULocationID" = tz."LocationID"
+WHERE
+    gtt.lpep_pickup_datetime::timestamp::date = '2019-09-18'
+    AND tz."Borough" != 'Unknown'
+GROUP BY
+    tz."Borough"
+HAVING
+    SUM(gtt.total_amount) > 50000
+ORDER BY
+    total_amount_sum DESC
+LIMIT 3;
+
+Question 6. Largest tip
+ANSWER = JFK Airport
+
+--Query
+WITH GET_LARGEST_TIP_AMOUNT AS(
+SELECT A.lpep_pickup_datetime, a."PULocationID" AS PULocationID, a."DOLocationID" AS DOLocationID ,a.tip_amount, b."Borough" AS Borough, b."Zone" AS Zone
+FROM green_taxi_trips a
+LEFT JOIN taxi_zone b ON b."LocationID" = a."PULocationID"
+WHERE EXTRACT(MONTH FROM lpep_pickup_datetime) = 9 AND EXTRACT(YEAR FROM lpep_pickup_datetime) = 2019
+AND a."PULocationID" = '7'
+ORDER BY a.tip_amount DESC
+LIMIT 6
+)
+SELECT
+PULocationID,
+DOLocationID,
+tip_amount,
+b."Zone"
+FROM GET_LARGEST_TIP_AMOUNT
+LEFT JOIN taxi_zone b ON b."LocationID" = DOLocationID
+ORDER BY tip_amount DESC

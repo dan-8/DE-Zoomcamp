@@ -165,15 +165,28 @@ docker run -it \
 Running locally
 
 ```bash
-URL="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
+URL="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/green/green_tripdata_2019-09.csv.gz"
+
+python ingest_data2.py \
+  --user=root \
+  --password=root \
+  --host=localhost \
+  --port=5431 \
+  --db=ny_taxi \
+  --table_name=green_taxi_trips_2019 \
+  --url=${URL}
+```
+
+```bash 2
+URL="https://s3.amazonaws.com/nyc-tlc/misc/taxi+_zone_lookup.csv"
 
 python ingest_data.py \
   --user=root \
   --password=root \
   --host=localhost \
-  --port=5432 \
+  --port=5431 \
   --db=ny_taxi \
-  --table_name=yellow_taxi_trips \
+  --table_name=taxi_zone \
   --url=${URL}
 ```
 
